@@ -1,0 +1,167 @@
+{
+  "partuid": 712258094912,
+  "total": 3,
+  "isElastic": true,
+  "products": [
+    {
+      "uid": 189907576192,
+      "title": "БОПП пакеты с клеевым клапаном",
+      "sku": "",
+      "text": "",
+      "mark": "",
+      "quantity": "",
+      "portion": 0,
+      "unit": "",
+      "single": "",
+      "price": "10.0000",
+      "priceold": "",
+      "descr": "",
+      "gallery": "[]",
+      "buttonlink": "",
+      "buttontarget": "",
+      "json_options": "[{\"title\":\"размер\",\"params\":{\"view\":\"select\",\"hasColor\":false,\"linkImage\":false},\"values\":[\"6х8\",\"12х20\"]}]",
+      "sort": 1000600,
+      "url": "https://sellerkellerful.ru/tproduct/1-189907576192-bopp-paketi-s-kleevim-klapanom",
+      "pack_label": "lwh",
+      "pack_x": 0,
+      "pack_y": 0,
+      "pack_z": 0,
+      "pack_m": 0,
+      "partuids": "[712258094912]",
+      "externalid": "OGtpU9aFljoldZnfGctp",
+      "editions": [
+        {
+          "uid": 489058294852,
+          "externalid": "5FhuHUZo2onzLu66DR1L",
+          "sku": "",
+          "price": "10.00",
+          "priceold": "",
+          "quantity": "",
+          "img": "",
+          "размер": "6х8"
+        },
+        {
+          "uid": 455533073542,
+          "externalid": "fMl6llEMF5UT9Ympay4J",
+          "sku": "",
+          "price": "10.00",
+          "priceold": "",
+          "quantity": "",
+          "img": "",
+          "размер": "12х20"
+        }
+      ],
+      "characteristics": []
+    },
+    {
+      "uid": 244369816902,
+      "title": "Пакеты ZIP LOCK с бегунком цветные (бирюзовые, розовые, черные)",
+      "sku": "",
+      "text": "",
+      "mark": "",
+      "quantity": "",
+      "portion": 0,
+      "unit": "",
+      "single": "",
+      "price": "25.0000",
+      "priceold": "",
+      "descr": "",
+      "gallery": "[]",
+      "buttonlink": "",
+      "buttontarget": "",
+      "json_options": "[{\"title\":\"размер\",\"params\":{\"view\":\"select\",\"hasColor\":false,\"linkImage\":false},\"values\":[\"15х20\",\"20х25\"]}]",
+      "sort": 1000700,
+      "url": "https://sellerkellerful.ru/tproduct/1-244369816902-paketi-zip-lock-s-begunkom-tsvetnie-biry",
+      "pack_label": "lwh",
+      "pack_x": 0,
+      "pack_y": 0,
+      "pack_z": 0,
+      "pack_m": 0,
+      "partuids": "[712258094912]",
+      "externalid": "roVy4gBD24GZie9Zb3Xu",
+      "properties": [
+        {
+          "title": "цвет",
+          "params": { "type": "single" },
+          "sort": 1,
+          "values": "бирюзовые\nрозовые\nчерные"
+        }
+      ],
+      "editions": [
+        {
+          "uid": 773901550902,
+          "externalid": "HiVAkYAzCVA7IAlDBXOi",
+          "sku": "",
+          "price": "25.00",
+          "priceold": "",
+          "quantity": "",
+          "img": "",
+          "размер": "15х20"
+        },
+        {
+          "uid": 871684584882,
+          "externalid": "7mNPEn1rPEI1sHGzIlz3",
+          "sku": "",
+          "price": "28.00",
+          "priceold": "",
+          "quantity": "",
+          "img": "",
+          "размер": "20х25"
+        }
+      ],
+      "characteristics": []
+    },
+    {
+      "uid": 892776250222,
+      "title": "Пленка",
+      "sku": "",
+      "text": "",
+      "mark": "",
+      "quantity": "",
+      "portion": 0,
+      "unit": "",
+      "single": "",
+      "price": "20.0000",
+      "priceold": "",
+      "descr": "",
+      "gallery": "[]",
+      "buttonlink": "",
+      "buttontarget": "",
+      "json_options": "",
+      "sort": 1000800,
+      "url": "https://sellerkellerful.ru/tproduct/1-892776250222-plenka",
+      "pack_label": "lwh",
+      "pack_x": 0,
+      "pack_y": 0,
+      "pack_z": 0,
+      "pack_m": 0,
+      "partuids": "[712258094912]",
+      "externalid": "vtUCf3LPJEj5m2hGXmu7",
+      "editions": [
+        {
+          "uid": 892776250222,
+          "price": "20.0000",
+          "priceold": "",
+          "sku": "",
+          "quantity": "",
+          "img": ""
+        }
+      ],
+      "characteristics": []
+    }
+  ],
+  "slice": 1,
+  "partlinks": [],
+  "options": [
+    {
+      "title": "размер",
+      "params": { "view": "select", "hasColor": false, "linkImage": false },
+      "values": [
+        { "id": 37924858, "value": "12х20" },
+        { "id": 37926582, "value": "15х20" },
+        { "id": 37926586, "value": "20х25" },
+        { "id": 37924854, "value": "6х8" }
+      ]
+    }
+  ]
+}
