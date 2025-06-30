@@ -43,7 +43,8 @@
         sum +
         field.variantQuantities.reduce((fieldSum, variant) => {
           if (variant.checked) {
-            return fieldSum + parseFloat(variant.price) * variant.quantity;
+            const price = parseFloat(variant.price);
+            return fieldSum + (isNaN(price) ? 0 : price * variant.quantity);
           }
           return fieldSum;
         }, 0)
@@ -84,7 +85,7 @@
 
       const pdfBytes = await generatePdf(dataForPdf);
 
-      await sendEmail(pdfBytes, email);
+      await sendEmail(email, dataForPdf);
       downloadPDF(pdfBytes, `order-${Date.now()}.pdf`);
 
       // Генерируем и скачиваем PDF

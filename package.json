@@ -16,9 +16,11 @@
     "svelte": "^5.34.7",
     "svelte-check": "^4.2.2",
     "typescript": "~5.8.3",
-    "vite": "^7.0.0"
+    "vite": "^7.0.0",
+    "vite-plugin-cdn-import": "^1.0.1"
   },
   "dependencies": {
+    "@emailjs/browser": "^4.4.1",
     "@pdf-lib/fontkit": "^1.1.1",
     "google-auth-library": "^10.1.0",
     "google-spreadsheet": "^4.1.4",

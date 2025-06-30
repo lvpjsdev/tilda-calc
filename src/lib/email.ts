@@ -1,16 +1,97 @@
-export const sendEmail = async (pdfBytes: BlobPart, email: string) => {
-  const formData = new FormData();
-  formData.append('access_key', import.meta.env.VITE_WEB3FORMS_KEY);
-  formData.append('email', email);
-  formData.append('subject', 'Order');
-  formData.append(
-    'attachment',
-    new Blob([pdfBytes], { type: 'application/pdf' }),
-    'document.pdf'
-  );
+import emailjs from '@emailjs/browser';
+import type { PdfOrderData, PdfOrderItem } from './pdf-utils';
 
-  await fetch('https://api.web3forms.com/submit', {
-    method: 'POST',
-    body: formData,
+export const emailInit = () => {
+  emailjs.init({
+    publicKey: import.meta.env.VITE_EMAILJS_PUBLIC_KEY,
+    // Do not allow headless browsers
+    blockHeadless: true,
+    blockList: {
+      // Block the suspended emails
+      list: [],
+      // The variable contains the email address
+      watchVariable: 'userEmail',
+    },
+    limitRate: {
+      // Set the limit rate for the application
+      id: 'app',
+      // Allow 1 request per 10s
+      throttle: 10000,
+    },
   });
+};
+
+export const sendEmail = async (email: string, data: PdfOrderData) => {
+  const generateHtmlTable = (data: PdfOrderData): string => {
+    let tableRows = data.items
+      .map(
+        (item: PdfOrderItem) => `
+        <tr>
+          <td colspan="4" style="font-weight: bold;">${item.serviceName}</td>
+        </tr>
+        ${item.variants
+          .map(
+            (variant: {
+              name: string;
+              price: number;
+              quantity: number;
+              total: number;
+            }) => `
+          <tr>
+            <td>${variant.name}</td>
+            <td>${variant.quantity}</td>
+            <td>${variant.price} ₽</td>
+            <td>${variant.total} ₽</td>
+          </tr>
+        `
+          )
+          .join('')}
+      `
+      )
+      .join('');
+
+    return `
+      <table border="1" cellpadding="5" cellspacing="0" style="border-collapse: collapse; width: 100%;">
+        <thead>
+          <tr>
+            <th>Вариант</th>
+            <th>Кол-во</th>
+            <th>Цена</th>
+            <th>Стоимость</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${tableRows}
+          <tr>
+            <td colspan="3" style="font-weight: bold;">Итого:</td>
+            <td>${data.totalSum} ₽</td>
+          </tr>
+        </tbody>
+      </table>
+    `;
+  };
+
+  const htmlContent = `
+    <h1>Данные заказа</h1>
+    <p><strong>Имя:</strong> ${data.name}</p>
+    <p><strong>Email:</strong> ${data.email}</p>
+    <p><strong>Дата:</strong> ${new Date().toLocaleDateString('ru-RU')}</p>
+    ${generateHtmlTable(data)}
+  `;
+
+  try {
+    await emailjs.send(
+      import.meta.env.VITE_EMAILJS_SERVICE_ID,
+      import.meta.env.VITE_EMAILJS_TEMPLATE_ID,
+      {
+        to_email: email,
+        subject: 'Данные заказа',
+        html_content: htmlContent,
+      },
+      import.meta.env.VITE_EMAILJS_PUBLIC_KEY
+    );
+    console.log('Email успешно отправлен');
+  } catch (error) {
+    console.error('Ошибка при отправке email:', error);
+  }
 };

@@ -1,0 +1,13 @@
+{
+  "template_name": "order_details_template",
+  "fields": {
+    "to_email": "Адрес получателя (например, {{to_email}})",
+    "subject": "Тема письма (например, {{subject}})",
+    "html_content": "HTML-контент письма (например, {{html_content}})"
+  },
+  "example": {
+    "to_email": "lvpjsdev@gmail.com",
+    "subject": "Данные заказа",
+    "html_content": "<h1>Пример HTML</h1><p>Это пример содержимого письма.</p>"
+  }
+}
