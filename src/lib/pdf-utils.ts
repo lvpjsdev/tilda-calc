@@ -90,7 +90,8 @@ export const generatePdf = async (dataForPdf: PdfOrderData) => {
   const lineHeight = LINE_SPACING;
 
   // Header Section
-  const logoUrl = '/public/logo.png'; // Path to the logo
+  const logoUrl =
+    'https://static.tildacdn.com/tild3866-3836-4065-a266-313938373731/logo.png'; // Path to the logo
   const logoBytes = await fetch(logoUrl).then((res) => res.arrayBuffer());
   const logoImage = await pdfDoc.embedPng(logoBytes);
 

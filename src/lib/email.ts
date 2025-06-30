@@ -1,24 +1,10 @@
-import emailjs from '@emailjs/browser';
 import type { PdfOrderData, PdfOrderItem } from './pdf-utils';
 
+import emailjs from '@emailjs/browser';
+
 export const emailInit = () => {
-  emailjs.init({
-    publicKey: import.meta.env.VITE_EMAILJS_PUBLIC_KEY,
-    // Do not allow headless browsers
-    blockHeadless: true,
-    blockList: {
-      // Block the suspended emails
-      list: [],
-      // The variable contains the email address
-      watchVariable: 'userEmail',
-    },
-    limitRate: {
-      // Set the limit rate for the application
-      id: 'app',
-      // Allow 1 request per 10s
-      throttle: 10000,
-    },
-  });
+  emailjs.init(import.meta.env.VITE_EMAILJS_PUBLIC_KEY);
+  emailjs.init(import.meta.env.VITE_EMAILJS_PUBLIC_KEY);
 };
 
 export const sendEmail = async (email: string, data: PdfOrderData) => {

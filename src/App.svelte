@@ -1,6 +1,5 @@
 <script lang="ts">
   import ProductField from './components/ProductField.svelte';
-  import mockData from './mocks.json';
   import {
     downloadPDF,
     generatePdf,
@@ -8,8 +7,38 @@
   } from './lib/pdf-utils';
   import type { Product, ProductOption } from './types';
   import { sendEmail } from './lib/email';
+  import { getProducts } from './api';
 
   let isGeneratingPdf = $state(false);
+  let isLoading = $state(true);
+
+  let products: Product[] = $state([]);
+  let options: ProductOption[] = $state([]);
+
+  // Убрали лишний $effect и неправильное использование реактивности
+  // Загружаем данные при инициализации компонента
+  $effect(() => {
+    async function loadProducts() {
+      try {
+        isLoading = true;
+        const data = await getProducts();
+        console.log('Loaded data:', data);
+
+        // Обновляем состояние
+        products = data.products || [];
+        options = data.options || [];
+
+        console.log('Products set:', products);
+        console.log('Options set:', options);
+      } catch (error) {
+        console.error('Failed to load products:', error);
+      } finally {
+        isLoading = false;
+      }
+    }
+
+    loadProducts();
+  });
 
   interface FieldData {
     id: number;
@@ -22,8 +51,6 @@
     }>;
   }
 
-  const products: Product[] = mockData.products;
-  const options: ProductOption[] = mockData.options;
   let email = $state('');
   let customerName = $state('');
   let productFields = $state<FieldData[]>([
@@ -71,7 +98,6 @@
       isGeneratingPdf = true;
 
       // Формируем данные
-
       const formData = {
         customerName,
         email,
@@ -82,13 +108,10 @@
       };
 
       const dataForPdf = mapFormDataToPdfData(formData);
-
       const pdfBytes = await generatePdf(dataForPdf);
 
       await sendEmail(email, dataForPdf);
       downloadPDF(pdfBytes, `order-${Date.now()}.pdf`);
-
-      // Генерируем и скачиваем PDF
     } catch (error) {
       console.error('Error generating PDF:', error);
     } finally {
@@ -98,62 +121,66 @@
 </script>
 
 <div class="lvp-t-calc_container">
-  <form class="lvp-t-calc_service-form" onsubmit={handleSubmit}>
-    <div class="lvp-t-calc_service-items">
-      {#each productFields as field (field.id)}
-        <div class="lvp-t-calc_field-wrapper">
-          <ProductField
-            {products}
-            {options}
-            bind:selectedUid={field.selectedUid}
-            bind:variantQuantities={field.variantQuantities}
-          />
-        </div>
-      {/each}
-    </div>
+  {#if isLoading}
+    <div class="lvp-t-calc_loading">Загрузка данных...</div>
+  {:else}
+    <form class="lvp-t-calc_service-form" onsubmit={handleSubmit}>
+      <div class="lvp-t-calc_service-items">
+        {#each productFields as field (field.id)}
+          <div class="lvp-t-calc_field-wrapper">
+            <ProductField
+              {products}
+              {options}
+              bind:selectedUid={field.selectedUid}
+              bind:variantQuantities={field.variantQuantities}
+            />
+          </div>
+        {/each}
+      </div>
 
-    <button
-      type="button"
-      class="lvp-t-calc_add-service-btn"
-      onclick={addNewField}
-    >
-      + Добавить услугу
-    </button>
+      <button
+        type="button"
+        class="lvp-t-calc_add-service-btn"
+        onclick={addNewField}
+      >
+        + Добавить услугу
+      </button>
 
-    <div class="lvp-t-calc_total-section">
-      <span>Общая сумма:</span>
-      <span class="lvp-t-calc_total-amount">{total.toFixed(2)}₽</span>
-    </div>
+      <div class="lvp-t-calc_total-section">
+        <span>Общая сумма:</span>
+        <span class="lvp-t-calc_total-amount">{total.toFixed(2)}₽</span>
+      </div>
 
-    <div class="lvp-t-calc_email-section">
-      <input
-        type="name"
-        class="lvp-t-calc_email-input"
-        placeholder="Введите ваше имя"
-        bind:value={customerName}
-        required
-      />
-      <input
-        type="email"
-        class="lvp-t-calc_email-input"
-        placeholder="Введите ваш email"
-        bind:value={email}
-        required
-      />
-    </div>
+      <div class="lvp-t-calc_email-section">
+        <input
+          type="text"
+          class="lvp-t-calc_email-input"
+          placeholder="Введите ваше имя"
+          bind:value={customerName}
+          required
+        />
+        <input
+          type="email"
+          class="lvp-t-calc_email-input"
+          placeholder="Введите ваш email"
+          bind:value={email}
+          required
+        />
+      </div>
 
-    <button
-      type="submit"
-      class="lvp-t-calc_order-btn"
-      disabled={isGeneratingPdf}
-    >
-      {#if isGeneratingPdf}
-        Подождите, генерируется PDF...
-      {:else}
-        Заказать и скачать PDF
-      {/if}
-    </button>
-  </form>
+      <button
+        type="submit"
+        class="lvp-t-calc_order-btn"
+        disabled={isGeneratingPdf}
+      >
+        {#if isGeneratingPdf}
+          Подождите, генерируется PDF...
+        {:else}
+          Заказать и скачать PDF
+        {/if}
+      </button>
+    </form>
+  {/if}
 </div>
 
 <style>
@@ -191,6 +218,15 @@
     padding: 20px;
   }
 
+  .lvp-t-calc_loading {
+    background-color: var(--lvp-t-calc-color-white);
+    padding: 30px;
+    border-radius: 8px;
+    box-shadow: 0 2px 10px var(--lvp-t-calc-color-shadow);
+    text-align: center;
+    color: var(--lvp-t-calc-color-text);
+  }
+
   .lvp-t-calc_service-form {
     background-color: var(--lvp-t-calc-color-white);
     padding: 30px;
@@ -221,6 +257,7 @@
     font-size: 14px;
     min-width: 0;
     width: 100%;
+    margin-bottom: 10px;
     font-family: 'Montserrat', Arial, sans-serif;
   }
 
@@ -272,10 +309,6 @@
 
   .lvp-t-calc_email-section {
     margin-bottom: 20px;
-  }
-
-  .lvp-t-calc_email-input {
-    width: 100%;
   }
 
   .lvp-t-calc_add-service-btn:hover,

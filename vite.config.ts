@@ -11,7 +11,7 @@ export default defineConfig({
         {
           name: '@emailjs/browser',
           var: 'emailjs',
-          path: 'https://cdn.jsdelivr.net/npm/@emailjs/browser/dist/email.min.js',
+          path: 'https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js',
         },
         {
           name: '@pdf-lib/fontkit',
