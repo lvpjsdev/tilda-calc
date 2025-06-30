@@ -1,10 +1,13 @@
 <script lang="ts">
   import ProductField from './components/ProductField.svelte';
   import mockData from './mocks.json';
-  import { downloadPDF, mapFormDataToPdfData } from './lib/pdf-utils';
+  import {
+    downloadPDF,
+    generatePdf,
+    mapFormDataToPdfData,
+  } from './lib/pdf-utils';
   import type { Product, ProductOption } from './types';
-  import { PDFDocument, rgb } from 'pdf-lib';
-  import fontkit from '@pdf-lib/fontkit';
+  import { sendEmail } from './lib/email';
 
   let isGeneratingPdf = $state(false);
 
@@ -22,6 +25,7 @@
   const products: Product[] = mockData.products;
   const options: ProductOption[] = mockData.options;
   let email = $state('');
+  let customerName = $state('');
   let productFields = $state<FieldData[]>([
     {
       id: Date.now(),
@@ -65,7 +69,10 @@
     try {
       isGeneratingPdf = true;
 
+      // Формируем данные
+
       const formData = {
+        customerName,
         email,
         products: productFields.map((field) => ({
           product: products.find((p) => p.uid === field.selectedUid),
@@ -75,154 +82,9 @@
 
       const dataForPdf = mapFormDataToPdfData(formData);
 
-      const pdfDoc = await PDFDocument.create();
-      pdfDoc.registerFontkit(fontkit);
+      const pdfBytes = await generatePdf(dataForPdf);
 
-      // Используем DejaVu Sans - хорошо поддерживает кириллицу
-      const fontUrl =
-        'https://cdn.jsdelivr.net/npm/dejavu-fonts-ttf@2.37.3/ttf/DejaVuSans.ttf';
-
-      const fontBytes = await fetch(fontUrl).then((res) => res.arrayBuffer());
-      const font = await pdfDoc.embedFont(fontBytes);
-
-      const page = pdfDoc.addPage();
-
-      // Настройка размеров и отступов
-      const pageWidth = page.getWidth();
-      const margin = 50;
-      let yPosition = page.getHeight() - margin;
-      const lineHeight = 25;
-
-      // Заголовок
-      page.drawText('Заказ', {
-        x: margin,
-        y: yPosition,
-        size: 24,
-        font: font,
-      });
-      yPosition -= lineHeight * 2;
-
-      // Email клиента
-      page.drawText(`Email: ${dataForPdf.email}`, {
-        x: margin,
-        y: yPosition,
-        size: 12,
-        font: font,
-      });
-      yPosition -= lineHeight * 2;
-
-      // Настройки таблицы
-      const tableWidth = pageWidth - margin * 2;
-      const colWidths = {
-        variant: Math.floor(tableWidth * 0.4),
-        quantity: Math.floor(tableWidth * 0.2),
-        price: Math.floor(tableWidth * 0.2),
-        total: Math.floor(tableWidth * 0.2),
-      };
-
-      // Перебираем все услуги
-      for (const item of dataForPdf.items) {
-        // Название услуги
-        page.drawText(item.serviceName, {
-          x: margin,
-          y: yPosition,
-          size: 14,
-          font: font,
-        });
-        yPosition -= lineHeight;
-
-        // Разделительная линия
-        page.drawLine({
-          start: { x: margin, y: yPosition + lineHeight / 2 },
-          end: { x: pageWidth - margin, y: yPosition + lineHeight / 2 },
-          thickness: 1,
-          color: rgb(0.8, 0.8, 0.8),
-        });
-
-        // Заголовки колонок
-        page.drawText('Вариант', {
-          x: margin + 20,
-          y: yPosition,
-          size: 12,
-          font: font,
-        });
-
-        page.drawText('Кол-во', {
-          x: margin + colWidths.variant,
-          y: yPosition,
-          size: 12,
-          font: font,
-        });
-
-        page.drawText('Цена', {
-          x: margin + colWidths.variant + colWidths.quantity,
-          y: yPosition,
-          size: 12,
-          font: font,
-        });
-
-        page.drawText('Стоимость', {
-          x: margin + colWidths.variant + colWidths.quantity + colWidths.price,
-          y: yPosition,
-          size: 12,
-          font: font,
-        });
-
-        yPosition -= lineHeight;
-
-        // Варианты услуги
-        for (const variant of item.variants) {
-          page.drawText(variant.name, {
-            x: margin + 20,
-            y: yPosition,
-            size: 12,
-            font: font,
-          });
-
-          page.drawText(variant.quantity.toString(), {
-            x: margin + colWidths.variant,
-            y: yPosition,
-            size: 12,
-            font: font,
-          });
-
-          page.drawText(`${variant.price} ₽`, {
-            x: margin + colWidths.variant + colWidths.quantity,
-            y: yPosition,
-            size: 12,
-            font: font,
-          });
-
-          page.drawText(`${variant.total} ₽`, {
-            x:
-              margin + colWidths.variant + colWidths.quantity + colWidths.price,
-            y: yPosition,
-            size: 12,
-            font: font,
-          });
-
-          yPosition -= lineHeight;
-        }
-
-        yPosition -= lineHeight;
-      }
-
-      // Итоговая сумма
-      page.drawText('Итого:', {
-        x: margin,
-        y: yPosition,
-        size: 14,
-        font: font,
-      });
-
-      page.drawText(`${dataForPdf.totalSum} ₽`, {
-        x: margin + colWidths.variant + colWidths.quantity + colWidths.price,
-        y: yPosition,
-        size: 14,
-        font: font,
-      });
-
-      const pdfBytes = await pdfDoc.save();
+      await sendEmail(pdfBytes, email);
       downloadPDF(pdfBytes, `order-${Date.now()}.pdf`);
 
       // Генерируем и скачиваем PDF
@@ -237,54 +99,6 @@
 <div class="lvp-t-calc_container">
   <form class="lvp-t-calc_service-form" onsubmit={handleSubmit}>
     <div class="lvp-t-calc_service-items">
-      <!-- {#each productRows as row, index}
-        <div class="lvp-t-calc_service-item">
-          <div class="lvp-t-calc_service-select-wrapper">
-          <select 
-            class="lvp-t-calc_service-select"
-            value={row.uid}
-            onchange={(e) => {
-              const target = e.target as HTMLSelectElement;
-              updateProduct(index, parseInt(target.value));
-            }}
-            required
-          >
-            <option value="" disabled selected>Выберите услугу</option>
-            {#each products as product}
-              <option value={product.uid}>{product.title} - {product.price}₽</option>
-            {/each}
-          </select>
-          <button
-            type="button"
-            class="lvp-t-calc_delete-btn"
-            onclick={() => deleteRow(index)}
-            style="visibility: {productRows.length > 1 ? 'visible' : 'hidden'}"
-            aria-label="Удалить строку"
-          >
-          </button>
-          </div>
-          <div class="lvp-t-calc_service-select-wrapper">
-
-          <input
-            type="number"
-            class="lvp-t-calc_quantity-input"
-            value={row.quantity}
-            min="1"
-            max="999"
-            onchange={(e) => {
-              const target = e.target as HTMLInputElement;
-              updateQuantity(index, parseInt(target.value) || 0);
-            }}
-            disabled={!row.edition}
-            required
-          />
-
-          <div class="lvp-t-calc_item-total">
-            {(row.price * row.quantity).toFixed(2)}₽
-          </div>
-          </div>
-        </div>
-      {/each} -->
       {#each productFields as field (field.id)}
         <div class="lvp-t-calc_field-wrapper">
           <ProductField
@@ -311,6 +125,13 @@
     </div>
 
     <div class="lvp-t-calc_email-section">
+      <input
+        type="name"
+        class="lvp-t-calc_email-input"
+        placeholder="Введите ваше имя"
+        bind:value={customerName}
+        required
+      />
       <input
         type="email"
         class="lvp-t-calc_email-input"
@@ -392,25 +213,6 @@
     margin-bottom: 10px;
   }
 
-  .lvp-t-calc_service-item {
-    display: flex;
-    gap: 10px;
-    align-items: flex-start;
-    width: 100%;
-    overflow: hidden;
-    flex-direction: column;
-  }
-
-  .lvp-t-calc_service-select-wrapper {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    min-width: 0;
-    flex: 1;
-  }
-
-  .lvp-t-calc_service-select,
-  .lvp-t-calc_quantity-input,
   .lvp-t-calc_email-input {
     padding: 10px;
     border: 1px solid var(--lvp-t-calc-color-border);
@@ -419,25 +221,6 @@
     min-width: 0;
     width: 100%;
     font-family: 'Montserrat', Arial, sans-serif;
-  }
-
-  .lvp-t-calc_service-select {
-    min-width: 200px;
-    max-width: 100%;
-  }
-
-  .lvp-t-calc_quantity-input {
-    width: 80px;
-    flex-shrink: 0;
-  }
-
-  .lvp-t-calc_item-total {
-    font-size: 14px;
-    font-weight: bold;
-    color: var(--lvp-t-calc-color-text);
-    width: 80px;
-    text-align: right;
-    flex-shrink: 0;
   }
 
   .lvp-t-calc_total-section {
@@ -502,47 +285,5 @@
   .lvp-t-calc_order-btn:disabled {
     opacity: 0.7;
     cursor: wait;
-  }
-
-  .lvp-t-calc_delete-btn {
-    width: 24px;
-    height: 24px;
-    padding: 0;
-    background: transparent;
-    border: 1px solid var(--lvp-t-calc-color-border);
-    border-radius: 4px;
-    cursor: pointer;
-    position: relative;
-    transition: all 0.2s ease-in-out;
-    flex-shrink: 0;
-  }
-
-  .lvp-t-calc_delete-btn::before,
-  .lvp-t-calc_delete-btn::after {
-    content: '';
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    width: 12px;
-    height: 2px;
-    background-color: var(--lvp-t-calc-color-text);
-    transition: background-color 0.2s ease-in-out;
-  }
-
-  .lvp-t-calc_delete-btn::before {
-    transform: translate(-50%, -50%) rotate(45deg);
-  }
-
-  .lvp-t-calc_delete-btn::after {
-    transform: translate(-50%, -50%) rotate(-45deg);
-  }
-
-  .lvp-t-calc_delete-btn:hover {
-    border-color: #ff0000;
-  }
-
-  .lvp-t-calc_delete-btn:hover::before,
-  .lvp-t-calc_delete-btn:hover::after {
-    background-color: #ff0000;
   }
 </style>

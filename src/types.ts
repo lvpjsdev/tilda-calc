@@ -48,3 +48,16 @@ export interface Product {
   properties?: ProductProperty[];
   editions?: ProductEdition[];
 }
+
+export interface OrderFormData {
+  email: string;
+  products: {
+    product: Product | undefined;
+    variants: {
+      title: string;
+      price: string;
+      quantity: number;
+      checked: boolean;
+    }[];
+  }[];
+}
