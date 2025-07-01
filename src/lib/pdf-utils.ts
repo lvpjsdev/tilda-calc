@@ -1,9 +1,3 @@
-import fontkit from '@pdf-lib/fontkit';
-import PDFlib from 'pdf-lib';
-
-const LINE_SPACING = 12; // Настраиваемый промежуток между строками
-const { PDFDocument, rgb } = PDFlib;
-
 export function downloadPDF(pdfBytes: BlobPart, filename = 'document.pdf') {
   const blob = new Blob([pdfBytes], { type: 'application/pdf' });
   const url = URL.createObjectURL(blob);
@@ -72,204 +66,70 @@ export const mapFormDataToPdfData = (formData: any): PdfOrderData => {
 };
 
 export const generatePdf = async (dataForPdf: PdfOrderData) => {
-  const pdfDoc = await PDFDocument.create();
-  pdfDoc.registerFontkit(fontkit);
-
-  // Используем DejaVu Sans - хорошо поддерживает кириллицу
-  const fontUrl =
-    'https://cdn.jsdelivr.net/npm/dejavu-fonts-ttf@2.37.3/ttf/DejaVuSans.ttf';
-
-  const fontBytes = await fetch(fontUrl).then((res) => res.arrayBuffer());
-  const font = await pdfDoc.embedFont(fontBytes);
-
-  const page = pdfDoc.addPage();
-
-  // Настройка размеров и отступов
-  const pageWidth = page.getWidth();
-  const margin = 50;
-  let yPosition = page.getHeight() - margin;
-  const lineHeight = LINE_SPACING;
-
-  // Header Section
-  const logoUrl =
-    'https://static.tildacdn.com/tild3866-3836-4065-a266-313938373731/logo.png'; // Path to the logo
-  const logoBytes = await fetch(logoUrl).then((res) => res.arrayBuffer());
-  const logoImage = await pdfDoc.embedPng(logoBytes);
-
-  const logoDims = logoImage.scale(0.3); // Scale logo to fit
-  const headerHeight = logoDims.height + 20; // Add padding
-
-  // Draw logo with rounded corners
-  page.drawImage(logoImage, {
-    x: 20,
-    y: page.getHeight() - logoDims.height - 10,
-    width: logoDims.width,
-    height: logoDims.height,
-  });
-
-  // Add contact information
-  const contactText =
-    '+7 (917) 535-34-33\nВладимир\nГ. Москва, ул.Красного Маяка 22к5';
-  const contactX = page.getWidth() - margin - 200; // Adjust position
-  const contactY = page.getHeight() - 40;
-
-  page.drawText(contactText, {
-    x: contactX,
-    y: contactY,
-    size: 10,
-    font: font,
-    lineHeight: 12,
-  });
-
-  // Adjust yPosition to start below the header
-  yPosition = page.getHeight() - headerHeight - margin;
-  // Removed duplicate header code
-  // Removed duplicate declarations of pdfDoc, font, page, margin, etc.
-
-  // Заголовок
-  page.drawText('Заказ', {
-    x: margin,
-    y: yPosition,
-    size: 24,
-    font: font,
-  });
-  yPosition -= lineHeight * 2;
-
-  // Email клиента
-  page.drawText(`Email: ${dataForPdf.email}`, {
-    x: margin,
-    y: yPosition,
-    size: 12,
-    font: font,
-  });
-  yPosition -= lineHeight * 2;
-
-  page.drawText(`Имя: ${dataForPdf.name} - ${new Date()}`, {
-    x: margin,
-    y: yPosition,
-    size: 12,
-    font: font,
-  });
-  yPosition -= lineHeight * 2;
-
-  const formattedDate = new Date().toLocaleDateString('ru-RU');
-  page.drawText(`Дата: ${formattedDate}`, {
-    x: margin,
-    y: yPosition,
-    size: 12,
-    font: font,
-  });
-  yPosition -= lineHeight * 2;
-
-  // Настройки таблицы
-  const tableWidth = pageWidth - margin * 2;
-  const colWidths = {
-    variant: Math.floor(tableWidth * 0.4),
-    quantity: Math.floor(tableWidth * 0.2),
-    price: Math.floor(tableWidth * 0.2),
-    total: Math.floor(tableWidth * 0.2),
+  const docDefinition = {
+    content: [
+      { text: 'Заказ', style: 'header' },
+      { text: `Имя: ${dataForPdf.name}`, style: 'subheader' },
+      { text: `Email: ${dataForPdf.email}`, style: 'subheader' },
+      {
+        text: `Дата: ${new Date().toLocaleDateString('ru-RU')}`,
+        style: 'subheader',
+      },
+      {
+        table: {
+          headerRows: 1,
+          widths: ['*', 'auto', 'auto', 'auto'],
+          body: [
+            ['Вариант', 'Кол-во', 'Цена', 'Стоимость'],
+            ...dataForPdf.items.flatMap((item) => [
+              [
+                { text: item.serviceName, colSpan: 4, style: 'tableHeader' },
+                {},
+                {},
+                {},
+              ],
+              ...item.variants.map((variant) => [
+                variant.name,
+                variant.quantity.toString(),
+                `${variant.price} ₽`,
+                `${variant.total} ₽`,
+              ]),
+            ]),
+            [
+              { text: 'Итого:', colSpan: 3, alignment: 'right' },
+              {},
+              {},
+              `${dataForPdf.totalSum} ₽`,
+            ],
+          ],
+        },
+      },
+    ],
+    defaultStyle: {},
+    styles: {
+      header: {
+        fontSize: 18,
+        bold: true,
+        margin: [0, 0, 0, 10] as [number, number, number, number],
+      },
+      subheader: {
+        fontSize: 12,
+        margin: [0, 5, 0, 5] as [number, number, number, number],
+      },
+      tableHeader: {
+        bold: true,
+        fillColor: '#eeeeee',
+      },
+    },
   };
 
-  // Перебираем все услуги
-  for (const item of dataForPdf.items) {
-    // Название услуги
-    page.drawText(item.serviceName, {
-      x: margin,
-      y: yPosition,
-      size: 14,
-      font: font,
-    });
-    yPosition -= lineHeight;
-
-    // Разделительная линия
-    page.drawLine({
-      start: { x: margin, y: yPosition + lineHeight / 2 },
-      end: { x: pageWidth - margin, y: yPosition + lineHeight / 2 },
-      thickness: 1,
-      color: rgb(0.8, 0.8, 0.8),
-    });
-
-    // Заголовки колонок
-    page.drawText('Вариант', {
-      x: margin + 20,
-      y: yPosition,
-      size: 12,
-      font: font,
-    });
-
-    page.drawText('Кол-во', {
-      x: margin + colWidths.variant,
-      y: yPosition,
-      size: 12,
-      font: font,
-    });
-
-    page.drawText('Цена', {
-      x: margin + colWidths.variant + colWidths.quantity,
-      y: yPosition,
-      size: 12,
-      font: font,
-    });
-
-    page.drawText('Стоимость', {
-      x: margin + colWidths.variant + colWidths.quantity + colWidths.price,
-      y: yPosition,
-      size: 12,
-      font: font,
-    });
-
-    yPosition -= lineHeight;
-
-    // Варианты услуги
-    for (const variant of item.variants) {
-      page.drawText(variant.name, {
-        x: margin + 20,
-        y: yPosition,
-        size: 12,
-        font: font,
-      });
-
-      page.drawText(variant.quantity.toString(), {
-        x: margin + colWidths.variant,
-        y: yPosition,
-        size: 12,
-        font: font,
-      });
-
-      page.drawText(`${variant.price} ₽`, {
-        x: margin + colWidths.variant + colWidths.quantity,
-        y: yPosition,
-        size: 12,
-        font: font,
-      });
-
-      page.drawText(`${variant.total} ₽`, {
-        x: margin + colWidths.variant + colWidths.quantity + colWidths.price,
-        y: yPosition,
-        size: 12,
-        font: font,
-      });
-
-      yPosition -= lineHeight;
+  return new Promise<Blob>((resolve, reject) => {
+    console.log('pdfMake from window:', (window as any).pdfMake);
+    const pdfMake = (window as any).pdfMake;
+    if (pdfMake && typeof pdfMake.createPdf === 'function') {
+      pdfMake.createPdf(docDefinition).getBlob((blob: Blob) => resolve(blob));
+    } else {
+      reject(new Error('pdfMake is not loaded or createPdf is not a function'));
     }
-
-    yPosition -= lineHeight;
-  }
-
-  // Итоговая сумма
-  page.drawText('Итого:', {
-    x: margin,
-    y: yPosition,
-    size: 14,
-    font: font,
   });
-
-  page.drawText(`${dataForPdf.totalSum} ₽`, {
-    x: margin + colWidths.variant + colWidths.quantity + colWidths.price,
-    y: yPosition,
-    size: 14,
-    font: font,
-  });
-
-  return await pdfDoc.save();
 };

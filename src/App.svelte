@@ -22,7 +22,6 @@
       try {
         isLoading = true;
         const data = await getProducts();
-        console.log('Loaded data:', data);
 
         // Обновляем состояние
         products = (data.products || []).map((product) => ({
@@ -34,9 +33,6 @@
           })),
         }));
         options = data.options || [];
-
-        console.log('Products set:', products);
-        console.log('Options set:', options);
       } catch (error) {
         console.error('Failed to load products:', error);
       } finally {
@@ -93,18 +89,19 @@
       {
         id: Date.now(),
         selectedUid: 0,
-        variantQuantities: [],
+        variantQuantities: [
+          {
+            title: '',
+            price: '',
+            quantity: 1, // Базовое значение количества
+            checked: false,
+          },
+        ],
       },
     ];
   }
 
   async function handleSubmit(e: Event) {
-    console.log('Form submitted with:', {
-      customerName,
-      email,
-      productFields,
-    });
-
     e.preventDefault();
 
     try {

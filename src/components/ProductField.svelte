@@ -17,7 +17,7 @@
 
   let total = 0; // Total sum of selected products and variants
 
-  let quantity = $state(0); // For services without variants
+  let quantity = $state(1); // For services without variants
 
   function getVariants(
     product: Product | null,
@@ -27,12 +27,7 @@
     const optionKeys = options.map((option) => option.title);
 
     return product.editions.map((edition) => {
-      console.log('edition', edition);
-      console.log('optionKeys', optionKeys);
-
       const title = optionKeys.reduce((acc, key) => {
-        console.log(key);
-
         // Проверяем наличие свойства через оператор in
         return (
           acc +
@@ -60,7 +55,7 @@
     if (variants) {
       variantQuantities = variants.map((v: Variant) => ({
         ...v,
-        quantity: 0,
+        quantity: 1,
         checked: variants.length === 1,
       }));
     } else {
@@ -137,7 +132,12 @@
         inputmode="numeric"
         class="lvp-t-calc_quantity-input"
         bind:value={quantity}
-        oninput={(e) => (quantity = parseInt(e.currentTarget.value) || 0)}
+        oninput={(e) => {
+          let value = e.currentTarget.value;
+          value = value.replace(/^0+(?=\d)/, '');
+          e.currentTarget.value = value;
+          quantity = parseInt(value) || 0;
+        }}
         min="1"
         max="999"
         required
@@ -163,10 +163,14 @@
                 inputmode="numeric"
                 class="lvp-t-calc_quantity-input"
                 bind:value={variant.quantity}
-                oninput={(e) =>
-                  handleQuantityChange(i, parseInt(e.currentTarget.value) || 0)}
+                oninput={(e) => {
+                  let value = e.currentTarget.value;
+                  value = value.replace(/^0+(?=\d)/, '');
+                  e.currentTarget.value = value;
+                  handleQuantityChange(i, parseInt(value) || 0);
+                }}
                 min="1"
-                max="999"
+                max="99999"
                 required
               />
             {/if}
@@ -183,10 +187,14 @@
               inputmode="numeric"
               class="lvp-t-calc_quantity-input"
               bind:value={variant.quantity}
-              oninput={(e) =>
-                handleQuantityChange(i, parseInt(e.currentTarget.value) || 0)}
+              oninput={(e) => {
+                let value = e.currentTarget.value;
+                value = value.replace(/^0+(?=\d)/, '');
+                e.currentTarget.value = value;
+                handleQuantityChange(i, parseInt(value) || 0);
+              }}
               min="1"
-              max="999"
+              max="99999"
               required
             />
             {#if variant.quantity > 0}

@@ -76,7 +76,6 @@ export const sendEmail = async (email: string, data: PdfOrderData) => {
       },
       import.meta.env.VITE_EMAILJS_PUBLIC_KEY
     );
-    console.log('Email успешно отправлен');
   } catch (error) {
     console.error('Ошибка при отправке email:', error);
   }
