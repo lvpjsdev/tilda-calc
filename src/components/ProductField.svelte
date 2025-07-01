@@ -100,6 +100,20 @@
       variantQuantities[index].checked = true;
     }
   }
+
+  function getOptionString(product: Product): string {
+    if (!product) return 'Выберите услугу';
+
+    if (isNaN(Number(product.price))) {
+      return `${product.title} - ${product.price}`;
+    }
+
+    if (Number(product.price) !== 0) {
+      return `${product.title} - ${product.price}₽`;
+    }
+
+    return `${product.title}`;
+  }
 </script>
 
 <div class="lvp-t-calc_service-item">
@@ -111,10 +125,7 @@
   >
     <option value={0} disabled selected>Выберите услугу</option>
     {#each products as product}
-      <option value={product.uid}
-        >{`${product.title}` +
-          (!!product.price ? ` - ${product.price}₽` : '')}</option
-      >
+      <option value={product.uid}>{getOptionString(product)}</option>
     {/each}
   </select>
   {#if selectedUid > 0 && variantQuantities.length === 0}
@@ -123,6 +134,7 @@
       <input
         id="quantity-input"
         type="number"
+        inputmode="numeric"
         class="lvp-t-calc_quantity-input"
         bind:value={quantity}
         oninput={(e) => (quantity = parseInt(e.currentTarget.value) || 0)}
@@ -143,11 +155,12 @@
                 onchange={(e) =>
                   handleVariantChange(i, e.currentTarget.checked)}
               />
-              <span>{variant.title} - {variant.price}₽</span>
+              <span>{getOptionString(variant)}</span>
             </label>
             {#if variant.checked}
               <input
                 type="number"
+                inputmode="numeric"
                 class="lvp-t-calc_quantity-input"
                 bind:value={variant.quantity}
                 oninput={(e) =>
@@ -159,12 +172,15 @@
             {/if}
             {#if variant.quantity > 0}
               <span class="lvp-t-calc_total-price">
-                {variant.quantity * parseInt(variant.price)}₽
+                {isNaN(parseInt(variant.price))
+                  ? variant.price
+                  : variant.quantity * parseInt(variant.price) + '₽'}
               </span>
             {/if}
           {:else}
             <input
               type="number"
+              inputmode="numeric"
               class="lvp-t-calc_quantity-input"
               bind:value={variant.quantity}
               oninput={(e) =>
@@ -175,7 +191,9 @@
             />
             {#if variant.quantity > 0}
               <span class="lvp-t-calc_total-price">
-                {variant.quantity * parseInt(variant.price)}₽
+                {isNaN(parseInt(variant.price))
+                  ? variant.price
+                  : variant.quantity * parseInt(variant.price) + '₽'}
               </span>
             {/if}
           {/if}
