@@ -193,7 +193,7 @@
   {/if}
 </div>
 
-<style>
+<style scoped>
   :global(:root) {
     --lvp-t-calc-color-background: #f5f5f5;
     --lvp-t-calc-color-white: #ffffff;
@@ -205,21 +205,6 @@
     --lvp-t-calc-gradient-start: rgba(0, 0, 0, 1);
     --lvp-t-calc-gradient-middle: rgba(0, 31, 70, 1);
     --lvp-t-calc-gradient-end: rgba(0, 19, 46, 1);
-  }
-
-  :global(*) {
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
-  }
-
-  :global(body) {
-    font-family: 'Montserrat', Arial, sans-serif;
-    background-color: var(--lvp-t-calc-color-background);
-    min-height: 100vh;
-    display: flex;
-    align-items: center;
-    justify-content: center;
   }
 
   .lvp-t-calc_container {
@@ -282,6 +267,7 @@
     border-top: 1px solid var(--lvp-t-calc-color-border-light);
     border-bottom: 1px solid var(--lvp-t-calc-color-border-light);
     font-size: 16px;
+    font-family: 'Montserrat', Arial, sans-serif;
   }
 
   .lvp-t-calc_total-amount {
@@ -290,12 +276,36 @@
     font-size: 18px;
   }
 
-  .lvp-t-calc_add-service-btn,
+  .lvp-t-calc_add-service-btn {
+    width: 100%;
+    padding: 12px; /* Reverted padding */
+    color: var(--lvp-t-calc-color-white);
+    font-size: 12px; /* Reverted font size */
+    font-family: 'Montserrat', Arial, sans-serif;
+    line-height: 1.55;
+    font-weight: 700;
+    border-radius: 30px;
+    background-image: linear-gradient(
+      0turn,
+      var(--lvp-t-calc-gradient-start) 0%,
+      var(--lvp-t-calc-gradient-middle) 50%,
+      var(--lvp-t-calc-gradient-end) 100%
+    );
+    border-color: transparent;
+    border-style: solid;
+    transition:
+      background-color 0.2s ease-in-out,
+      color 0.2s ease-in-out,
+      border-color 0.2s ease-in-out;
+    cursor: pointer;
+    margin-bottom: 20px;
+  }
+
   .lvp-t-calc_order-btn {
     width: 100%;
-    padding: 12px;
+    padding: 16px; /* Increased padding */
     color: var(--lvp-t-calc-color-white);
-    font-size: 12px;
+    font-size: 14px; /* Increased font size */
     font-family: 'Montserrat', Arial, sans-serif;
     line-height: 1.55;
     font-weight: 700;
