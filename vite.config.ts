@@ -7,6 +7,7 @@ export default defineConfig({
   plugins: [
     svelte(),
     cdnImport({
+      enableInDevMode: true,
       modules: [
         {
           name: '@emailjs/browser',
@@ -16,12 +17,12 @@ export default defineConfig({
         {
           name: '@pdf-lib/fontkit',
           var: 'fontkit',
-          path: 'https://cdn.jsdelivr.net/npm/@pdf-lib/fontkit/dist/fontkit.umd.min.js',
+          path: 'https://cdn.jsdelivr.net/npm/@pdf-lib/fontkit@1.1.1/dist/fontkit.umd.min.js',
         },
         {
           name: 'pdf-lib',
           var: 'PDFLib',
-          path: 'https://cdn.jsdelivr.net/npm/pdf-lib/dist/pdf-lib.min.js',
+          path: 'https://cdnjs.cloudflare.com/ajax/libs/pdf-lib/1.17.1/pdf-lib.min.js',
         },
       ],
     }),

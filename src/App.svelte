@@ -92,6 +92,12 @@
   }
 
   async function handleSubmit(e: Event) {
+    console.log('Form submitted with:', {
+      customerName,
+      email,
+      productFields,
+    });
+
     e.preventDefault();
 
     try {

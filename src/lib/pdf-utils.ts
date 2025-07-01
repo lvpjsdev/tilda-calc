@@ -1,5 +1,8 @@
 import fontkit from '@pdf-lib/fontkit';
-import { PDFDocument, rgb } from 'pdf-lib';
+import PDFlib from 'pdf-lib';
+
+const LINE_SPACING = 12; // Настраиваемый промежуток между строками
+const { PDFDocument, rgb } = PDFlib;
 
 export function downloadPDF(pdfBytes: BlobPart, filename = 'document.pdf') {
   const blob = new Blob([pdfBytes], { type: 'application/pdf' });
@@ -69,8 +72,6 @@ export const mapFormDataToPdfData = (formData: any): PdfOrderData => {
 };
 
 export const generatePdf = async (dataForPdf: PdfOrderData) => {
-  const LINE_SPACING = 8; // Настраиваемый промежуток между строками
-
   const pdfDoc = await PDFDocument.create();
   pdfDoc.registerFontkit(fontkit);
 
