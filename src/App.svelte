@@ -216,6 +216,8 @@
     width: 100%;
     max-width: 600px;
     padding: 20px;
+    margin: 0 auto;
+    margin-top: 50px;
   }
 
   .lvp-t-calc_loading {
