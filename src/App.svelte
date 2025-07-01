@@ -25,7 +25,14 @@
         console.log('Loaded data:', data);
 
         // Обновляем состояние
-        products = data.products || [];
+        products = (data.products || []).map((product) => ({
+          ...product,
+          uid: Number(product.uid),
+          editions: product.editions?.map((edition) => ({
+            ...edition,
+            uid: Number(edition.uid),
+          })),
+        }));
         options = data.options || [];
 
         console.log('Products set:', products);
