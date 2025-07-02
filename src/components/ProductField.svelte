@@ -15,6 +15,10 @@
     variantQuantities = $bindable<VariantQuantity[]>([]),
   } = $props();
 
+  let customValue = $state('');
+  let customTitle = $state('');
+  let customQuantity = $state(1);
+
   let total = 0; // Total sum of selected products and variants
 
   let quantity = $state(1); // For services without variants
@@ -123,7 +127,71 @@
       <option value={product.uid}>{getOptionString(product)}</option>
     {/each}
   </select>
-  {#if selectedUid > 0 && variantQuantities.length === 0}
+
+  {#if selectedUid === -1}
+    <div class="lvp-t-calc_quantity-wrapper">
+      <input
+        id="custom-title-input"
+        type="text"
+        class="lvp-t-calc_title-input"
+        bind:value={customTitle}
+        placeholder="Название услуги"
+        oninput={() => {
+          variantQuantities = [
+            {
+              title: customTitle,
+              price: customValue,
+              quantity: customQuantity,
+              checked: true,
+            },
+          ];
+        }}
+        required
+      />
+      <input
+        id="custom-value-input"
+        type="number"
+        inputmode="numeric"
+        class="lvp-t-calc_quantity-input"
+        bind:value={customValue}
+        min="0"
+        step="any"
+        placeholder="Цена"
+        oninput={() => {
+          variantQuantities = [
+            {
+              title: customTitle,
+              price: customValue,
+              quantity: customQuantity,
+              checked: true,
+            },
+          ];
+        }}
+        required
+      />
+      <input
+        id="custom-quantity-input"
+        type="number"
+        inputmode="numeric"
+        class="lvp-t-calc_quantity-input"
+        bind:value={customQuantity}
+        min="1"
+        step="1"
+        placeholder="Количество"
+        oninput={() => {
+          variantQuantities = [
+            {
+              title: customTitle,
+              price: customValue,
+              quantity: customQuantity,
+              checked: true,
+            },
+          ];
+        }}
+        required
+      />
+    </div>
+  {:else if selectedUid > 0 && variantQuantities.length === 0}
     <div class="lvp-t-calc_quantity-wrapper">
       <label for="quantity-input">Количество:</label>
       <input
@@ -212,6 +280,17 @@
 </div>
 
 <style>
+  .lvp-t-calc_quantity-wrapper {
+    display: flex;
+    gap: 10px;
+    width: 100%;
+    align-items: center;
+  }
+  .lvp-t-calc_title-input {
+    flex: 1;
+    min-width: 0;
+    box-sizing: border-box;
+  }
   .lvp-t-calc_service-item {
     display: flex;
     gap: 10px;
@@ -234,6 +313,12 @@
     gap: 12px;
   }
 
+  .lvp-t-calc_quantity-wrapper {
+    display: flex;
+    flex-wrap: nowrap;
+    gap: 12px;
+  }
+
   .lvp-t-calc_variant-label {
     display: flex;
     align-items: center;
@@ -243,7 +328,8 @@
   }
 
   .lvp-t-calc_service-select,
-  .lvp-t-calc_quantity-input {
+  .lvp-t-calc_quantity-input,
+  .lvp-t-calc_title-input {
     padding: 10px;
     border: 1px solid var(--lvp-t-calc-color-border);
     border-radius: 4px;
@@ -260,6 +346,12 @@
   .lvp-t-calc_quantity-input {
     width: 80px;
     flex-shrink: 0;
+  }
+
+  .lvp-t-calc_title-input {
+    width: auto;
+    min-width: 80px;
+    flex-grow: 1;
   }
 
   .lvp-t-calc_total-price {

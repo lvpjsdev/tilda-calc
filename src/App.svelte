@@ -56,6 +56,7 @@
 
   let email = $state('');
   let customerName = $state('');
+  let customField = $state(''); // Кастомное числовое поле, изначально пустое
   let productFields = $state<FieldData[]>([
     {
       id: Date.now(),
@@ -111,6 +112,7 @@
       const formData = {
         customerName,
         email,
+        customField: customField === '' ? '' : Number(customField),
         products: productFields.map((field) => ({
           product: products.find((p) => p.uid === field.selectedUid),
           variants: field.variantQuantities,
@@ -139,7 +141,7 @@
         {#each productFields as field (field.id)}
           <div class="lvp-t-calc_field-wrapper">
             <ProductField
-              {products}
+              products={[...products, { uid: -1, title: 'Другое', price: '0' }]}
               {options}
               bind:selectedUid={field.selectedUid}
               bind:variantQuantities={field.variantQuantities}
@@ -177,7 +179,6 @@
           required
         />
       </div>
-
       <button
         type="submit"
         class="lvp-t-calc_order-btn"
