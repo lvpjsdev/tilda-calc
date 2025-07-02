@@ -36,20 +36,43 @@ export const mapFormDataToPdfData = (formData: any): PdfOrderData => {
   const items: PdfOrderItem[] = formData.products
     .filter(
       (item: any) =>
-        item.product &&
-        item.variants.some((v: any) => v.checked && v.quantity > 0)
+        (item.product &&
+          item.variants.some((v: any) => v.checked && v.quantity > 0)) ||
+        (!item.product &&
+          item.variants &&
+          item.variants.length &&
+          item.variants[0].title &&
+          item.variants[0].price)
     )
-    .map((item: any) => ({
-      serviceName: item.product.title,
-      variants: item.variants
-        .filter((v: any) => v.checked && v.quantity > 0)
-        .map((v: any) => ({
-          name: v.title,
-          price: parseInt(v.price),
-          quantity: v.quantity,
-          total: v.quantity * parseInt(v.price),
-        })),
-    }));
+    .map((item: any) => {
+      if (item.product) {
+        return {
+          serviceName: item.product.title,
+          variants: item.variants
+            .filter((v: any) => v.checked && v.quantity > 0)
+            .map((v: any) => ({
+              name: v.title,
+              price: parseInt(v.price),
+              quantity: v.quantity,
+              total: v.quantity * parseInt(v.price),
+            })),
+        };
+      } else {
+        // Кастомная услуга
+        return {
+          serviceName: item.variants[0].title,
+          variants: [
+            {
+              name: item.variants[0].title,
+              price: parseInt(item.variants[0].price),
+              quantity: item.variants[0].quantity,
+              total:
+                item.variants[0].quantity * parseInt(item.variants[0].price),
+            },
+          ],
+        };
+      }
+    });
 
   const totalSum = items.reduce(
     (sum, item) =>
@@ -64,10 +87,51 @@ export const mapFormDataToPdfData = (formData: any): PdfOrderData => {
     totalSum,
   };
 };
+// Загружает изображение по URL и возвращает dataURL
+export async function fetchImageAsDataURL(url: string): Promise<string> {
+  const response = await fetch(url);
+  const blob = await response.blob();
+  return new Promise<string>((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      if (typeof reader.result === 'string') resolve(reader.result);
+      else reject(new Error('Failed to convert image to dataURL'));
+    };
+    reader.onerror = reject;
+    reader.readAsDataURL(blob);
+  });
+}
 
-export const generatePdf = async (dataForPdf: PdfOrderData) => {
+export const generatePdf = async (
+  dataForPdf: PdfOrderData,
+  logoDataUrl: string = 'https://static.tildacdn.com/tild6261-6433-4230-a362-373032656562/logo.png'
+) => {
+  // Если это внешний URL, преобразуем в dataURL
+  let logo = logoDataUrl;
+  if (logoDataUrl.startsWith('http')) {
+    logo = await fetchImageAsDataURL(logoDataUrl);
+  }
   const docDefinition = {
     content: [
+      {
+        columns: [
+          {
+            image: logo,
+            width: 150,
+            margin: [0, 0, 0, 10],
+          },
+          {
+            text: [
+              '+7 (917) 535-34-33\n',
+              'Владимир\n',
+              'Г. Москва, ул.Красного Маяка 22к5\n',
+            ],
+            style: 'subheader',
+            alignment: 'right',
+            margin: [0, 0, 0, 10],
+          },
+        ],
+      },
       { text: 'Заказ', style: 'header' },
       { text: `Имя: ${dataForPdf.name}`, style: 'subheader' },
       { text: `Email: ${dataForPdf.email}`, style: 'subheader' },
