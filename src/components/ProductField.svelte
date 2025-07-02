@@ -285,6 +285,7 @@
     gap: 10px;
     width: 100%;
     align-items: center;
+    font-family: 'Montserrat', Arial, sans-serif;
   }
   .lvp-t-calc_title-input {
     flex: 1;
@@ -357,5 +358,6 @@
   .lvp-t-calc_total-price {
     min-width: 80px;
     text-align: right;
+    font-family: 'Montserrat', Arial, sans-serif;
   }
 </style>
