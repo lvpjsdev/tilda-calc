@@ -210,7 +210,7 @@
 
   .lvp-t-calc_container {
     width: 100%;
-    max-width: 600px;
+    max-width: 1000px;
     padding: 20px;
     margin: 0 auto;
     margin-top: 50px;
@@ -230,6 +230,9 @@
     padding: 30px;
     border-radius: 8px;
     box-shadow: 0 2px 10px var(--lvp-t-calc-color-shadow);
+    width: 100%;
+    box-sizing: border-box;
+    overflow-x: auto;
   }
 
   .lvp-t-calc_service-items {
@@ -241,7 +244,9 @@
 
   .lvp-t-calc_field-wrapper {
     position: relative;
-    width: 100%;
+    width: auto;
+    max-width: 100%;
+    box-sizing: border-box;
     border: 1px solid var(--lvp-t-calc-color-border-light);
     border-radius: 8px;
     padding: 15px;
@@ -254,7 +259,9 @@
     border-radius: 4px;
     font-size: 14px;
     min-width: 0;
-    width: 100%;
+    width: auto;
+    max-width: 100%;
+    box-sizing: border-box;
     margin-bottom: 10px;
     font-family: 'Montserrat', Arial, sans-serif;
   }
@@ -332,6 +339,10 @@
 
   .lvp-t-calc_email-section {
     margin-bottom: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    align-items: stretch;
   }
 
   .lvp-t-calc_add-service-btn:hover,
