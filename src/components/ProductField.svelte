@@ -122,7 +122,7 @@
     onchange={() => handleProductChange(selectedUid)}
     required
   >
-    <option value={0} disabled selected>Выберите услугу</option>
+    <option value={0} disabled selected>Выберите товар или услугу</option>
     {#each products as product}
       <option value={product.uid}>{getOptionString(product)}</option>
     {/each}
@@ -326,6 +326,7 @@
     gap: 8px;
     flex: 1;
     cursor: pointer;
+    font-family: 'Montserrat', Arial, sans-serif;
   }
 
   .lvp-t-calc_service-select,
