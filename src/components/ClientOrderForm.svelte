@@ -101,7 +101,7 @@
 
   async function handleSubmit(e: Event) {
     console.log('handleSubmit');
-    
+
     e.preventDefault();
 
     try {
@@ -130,7 +130,7 @@
 </script>
 
 <div class="lvp-t-calc_container">
-  {import.meta.env.DEV && 'client'}
+  {import.meta.env.DEV ? 'client' : ''}
   {#if isLoading}
     <div class="lvp-t-calc_loading">Загрузка данных...</div>
   {:else}

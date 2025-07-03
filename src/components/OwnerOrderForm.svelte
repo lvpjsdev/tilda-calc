@@ -133,7 +133,7 @@
 </script>
 
 <div class="lvp-t-calc_container">
-  {import.meta.env.DEV && 'owner'}
+  {import.meta.env.DEV ? 'owner' : ''}
   {#if isLoading}
     <div class="lvp-t-calc_loading">Загрузка данных...</div>
   {:else}
