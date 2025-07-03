@@ -13,6 +13,7 @@
     options = [],
     selectedUid = $bindable(0),
     variantQuantities = $bindable<VariantQuantity[]>([]),
+    allowPriceEdit,
   } = $props();
 
   let customValue = $state('');
@@ -148,27 +149,29 @@
         }}
         required
       />
-      <input
-        id="custom-value-input"
-        type="number"
-        inputmode="numeric"
-        class="lvp-t-calc_quantity-input"
-        bind:value={customValue}
-        min="0"
-        step="any"
-        placeholder="Цена"
-        oninput={() => {
-          variantQuantities = [
-            {
-              title: customTitle,
-              price: customValue,
-              quantity: customQuantity,
-              checked: true,
-            },
-          ];
-        }}
-        required
-      />
+      {#if allowPriceEdit}
+        <input
+          id="custom-value-input"
+          type="number"
+          inputmode="numeric"
+          class="lvp-t-calc_quantity-input"
+          bind:value={customValue}
+          min="0"
+          step="any"
+          placeholder="Цена"
+          oninput={() => {
+            variantQuantities = [
+              {
+                title: customTitle,
+                price: customValue,
+                quantity: customQuantity,
+                checked: true,
+              },
+            ];
+          }}
+          required
+        />
+      {/if}
       <input
         id="custom-quantity-input"
         type="number"
@@ -191,8 +194,29 @@
         required
       />
     </div>
-  {:else if selectedUid > 0 && variantQuantities.length === 0}
+  {:else if selectedUid > 0 && (variantQuantities.length === 0 || (variantQuantities.length === 1 && allowPriceEdit))
+    }
     <div class="lvp-t-calc_quantity-wrapper">
+      {#if variantQuantities.length === 1 && allowPriceEdit}
+        <input
+          type="number"
+          inputmode="numeric"
+          class="lvp-t-calc_quantity-input"
+          bind:value={variantQuantities[0].price}
+          min="0"
+          step="any"
+          placeholder="Цена"
+          oninput={(e: Event) => {
+            // Обновляем цену в массиве вариантов
+            const target = e.target as HTMLInputElement;
+            const newPrice = target.value;
+            variantQuantities = [{
+              ...variantQuantities[0],
+              price: newPrice
+            }];
+          }}
+        />
+      {/if}
       <label for="quantity-input">Количество:</label>
       <input
         id="quantity-input"
@@ -204,12 +228,28 @@
           let value = e.currentTarget.value;
           value = value.replace(/^0+(?=\d)/, '');
           e.currentTarget.value = value;
-          quantity = parseInt(value) || 0;
+          const newQuantity = parseInt(value) || 0;
+          quantity = newQuantity;
+          
+          // Обновляем количество в массиве вариантов, если есть один вариант
+          if (variantQuantities.length === 1) {
+            variantQuantities = [{
+              ...variantQuantities[0],
+              quantity: newQuantity
+            }];
+          }
         }}
         min="1"
         max="999"
         required
       />
+      {#if variantQuantities.length === 1}
+        <span class="lvp-t-calc_total-price">
+          {isNaN(parseInt(variantQuantities[0].price))
+            ? variantQuantities[0].price
+            : (variantQuantities[0].quantity * parseInt(variantQuantities[0].price) || 0) + '₽'}
+        </span>
+      {/if}
     </div>
   {:else if selectedUid > 0 && variantQuantities.length > 0}
     <div class="lvp-t-calc_variants-list">
@@ -226,6 +266,18 @@
               <span>{getOptionString(variant)}</span>
             </label>
             {#if variant.checked}
+              {#if allowPriceEdit}
+                <input
+                  type="number"
+                  inputmode="numeric"
+                  class="lvp-t-calc_price-input"
+                  bind:value={variant.price}
+                  min="0"
+                  step="any"
+                  placeholder="Цена"
+                  style="width: 90px; margin-right: 8px"
+                />
+              {/if}
               <input
                 type="number"
                 inputmode="numeric"
@@ -280,6 +332,18 @@
 </div>
 
 <style>
+  .lvp-t-calc_price-display {
+    padding: 8px 12px;
+    border: 1px solid #dddddd;
+    border-radius: 4px;
+    min-width: 80px;
+    text-align: center;
+    background-color: #f9f9f9;
+    margin: 0 5px;
+    font-size: 14px;
+    line-height: 1.5;
+  }
+
   .lvp-t-calc_quantity-wrapper {
     display: flex;
     gap: 10px;

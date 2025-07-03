@@ -15,6 +15,22 @@ export function downloadPDF(pdfBytes: BlobPart, filename = 'document.pdf') {
   setTimeout(() => URL.revokeObjectURL(url), 100);
 }
 
+// Генерация base64 PNG-градиента (1x100px, #000 → #001f46 → #00132e)
+export function generateGradientBase64(height = 100) {
+  const canvas = document.createElement('canvas');
+  canvas.width = 1;
+  canvas.height = height;
+  const ctx = canvas.getContext('2d');
+  if (!ctx) throw new Error('Не удалось получить 2D-контекст для canvas');
+  const gradient = ctx.createLinearGradient(0, 0, 0, height);
+  gradient.addColorStop(0, '#000000');
+  gradient.addColorStop(0.5, '#001f46');
+  gradient.addColorStop(1, '#00132e');
+  ctx.fillStyle = gradient;
+  ctx.fillRect(0, 0, 1, height);
+  return canvas.toDataURL('image/png');
+}
+
 export interface PdfOrderItem {
   serviceName: string;
   variants: Array<{
@@ -111,8 +127,15 @@ export const generatePdf = async (
   if (logoDataUrl.startsWith('http')) {
     logo = await fetchImageAsDataURL(logoDataUrl);
   }
+  const gradientBase64 = generateGradientBase64(200);
   const docDefinition = {
     content: [
+      {
+        image: gradientBase64,
+        width: 595, // A4 width in pt (portrait)
+        height: 200,
+        absolutePosition: { x: 0, y: 0 },
+      },
       {
         columns: [
           {
@@ -129,8 +152,10 @@ export const generatePdf = async (
             style: 'subheader',
             alignment: 'right',
             margin: [0, 0, 0, 10],
+            color: '#fff',
           },
         ],
+        margin: [0, 0, 0, 10],
       },
       { text: 'Заказ', style: 'header' },
       { text: `Имя: ${dataForPdf.name}`, style: 'subheader' },
